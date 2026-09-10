@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Local environment file — holds real credentials. NEVER commit this.
+# Credentials committed to git stay in history even after deletion, so
+# recovering means rotating every password AND rewriting history for everyone.
+# The PreToolUse hook in .claude/hooks/block-secret-commit.sh backs this up.
+# ---------------------------------------------------------------------------
+.claude/qa-test-env.md
+.claude/settings.json
+.claude/settings.local.json
+
+# Other credential shapes
+.env
+.env.*
+!.env.example
+*credentials*.json
+*secrets*.y*ml
+*.pem
+*.key
+
+# Test run artefacts — regenerate rather than commit
+reports/*.md
+!reports/README.md
+!reports/sample_execution_report.md
+screenshots/
+test-results/
+playwright-report/
+
+# Office lock files
+~$*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+npm-debug.log*
