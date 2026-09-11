@@ -17,13 +17,15 @@
 *.pem
 *.key
 
-# Test run artefacts — regenerate rather than commit
-reports/*.md
-!reports/README.md
-!reports/sample_execution_report.md
+# Tooling run artefacts — regenerate rather than commit.
+# (test-cases/, reports/ and bug-evidence/ ARE tracked — they are the team's QA record.)
 screenshots/
 test-results/
 playwright-report/
+
+# Network captures (HAR) carry session cookies and auth headers — never commit them,
+# not even as bug evidence. Copy the relevant request/response into evidence.md instead.
+*.har
 
 # Office lock files
 ~$*

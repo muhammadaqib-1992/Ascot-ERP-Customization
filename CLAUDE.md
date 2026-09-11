@@ -28,6 +28,14 @@
 
 **Environment file:** `.claude/qa-test-env.md` (git-ignored, per-teammate; template `.claude/qa-test-env.example.md`). Holds environment URLs, account identifiers, tracker details, and per-role test logins. The execution and permission skills read it at the start of a run; a `<PLACEHOLDER>` there means ask the user in chat. **Never** write credentials into reports, screenshots, the tracker, the project docs, or chat beyond the turn they are given — and never paste the env file's contents anywhere.
 
+**Where QA work is kept** (tracked in git — this is the team's record; each folder's `README.md` has the full convention):
+
+| Folder | Holds | Naming |
+|---|---|---|
+| `test-cases/` | Approved test cases | `YYYY-MM-DD_<ShortCode>_<slug>.md` |
+| `reports/` | Execution and permission-test reports | `YYYY-MM-DD_<TC-id>_<env>.md` |
+| `bug-evidence/` | Screenshots, recordings, logs per defect | `DRAFT_YYYY-MM-DD_<slug>/` → `<TRACKER-ID>_<slug>/` once filed |
+
 **MCP servers** (each teammate connects their own — see `README.md`):
 - **Browser automation** (e.g. Playwright) — drives the application under test.
 - **Issue tracker** (e.g. Jira) — reads tickets, files defects.

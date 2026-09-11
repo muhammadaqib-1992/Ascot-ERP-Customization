@@ -8,6 +8,201 @@ Nothing here is tied to a particular product, tracker, or industry. It is a **st
 
 ---
 
+## Quick start — step by step
+
+Follow these in order. Each step ends with a **✅ Check** so you know it worked before moving on. Allow about 20 minutes, plus however long it takes to load your project documents.
+
+Commands are shown for **Git Bash / macOS / Linux**. Where Windows PowerShell differs, the PowerShell version is given too.
+
+### Step 0 — Check you have the tools
+
+```bash
+node -v
+```
+```bash
+python --version
+```
+```bash
+git --version
+```
+```bash
+claude --version
+```
+
+✅ **Check:** Node 18+, Python 3.9+, and a version number for both git and Claude Code. Claude Code missing? Install the desktop app, or run `npm install -g @anthropic-ai/claude-code`. On Windows, Claude Code also needs **Git for Windows** — it provides the `bash` the hooks run in.
+
+### Step 1 — Clone the workspace
+
+```bash
+git clone https://github.com/muhammadaqib-1992/QA_Agentic_Workspace.git
+```
+```bash
+cd QA_Agentic_Workspace
+```
+
+✅ **Check:** the folder contains `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `.claude/` and `knowledge-base/`.
+
+### Step 2 — Open it in Claude Code
+
+- **Desktop app:** Code tab → **Open project** → pick the `QA_Agentic_Workspace` folder.
+- **CLI:** run `claude` from inside the folder.
+
+`CLAUDE.md` and the skills load automatically — there is nothing to activate.
+
+✅ **Check:** type `/skills` (CLI) or open the skills menu (desktop). You should see the five `qa-*` skills: `qa-context-lookup`, `qa-test-writing`, `qa-test-execution`, `qa-permission-testing`, `qa-bug-reporting`.
+
+### Step 3 — Create your personal environment file
+
+This holds your URLs and test logins. It is git-ignored and never leaves your machine.
+
+```bash
+cp .claude/qa-test-env.example.md .claude/qa-test-env.md
+```
+
+PowerShell:
+```powershell
+Copy-Item .claude/qa-test-env.example.md .claude/qa-test-env.md
+```
+
+Open `.claude/qa-test-env.md` and fill in what you have: environment URLs, tracker project key, and a login **per role** you test. Leave anything you don't have as `<PLACEHOLDER>` — the agent will simply ask you for it when a run needs it.
+
+✅ **Check:** run `git status` — `qa-test-env.md` must **not** appear. If it does, stop and don't commit; the `.gitignore` has been changed.
+
+### Step 4 — Turn on the safety hooks
+
+```bash
+cp .claude/settings.json.example .claude/settings.json
+```
+
+PowerShell:
+```powershell
+Copy-Item .claude/settings.json.example .claude/settings.json
+```
+
+This activates two hooks:
+- **`PreToolUse`** — refuses any `git` command that would commit your credentials file or a `.env`.
+- **`SessionStart`** — at the start of every session (and after compaction) it reports what is configured and what is missing.
+
+Close and reopen your Claude Code session so the hooks load.
+
+✅ **Check:** the new session opens with a **"QA workspace session"** message listing your setup status. Then prove the guard works — ask Claude to *"run git add .claude/qa-test-env.md"*. It must be **blocked**.
+
+### Step 5 — Connect your MCP servers
+
+The skills need three connections. Each teammate connects their own, with their own logins.
+
+**Browser automation (Playwright)** — required for test execution and permission testing. It runs locally, so it can only be added from the CLI:
+
+```bash
+claude mcp add playwright -- npx -y @playwright/mcp@latest
+```
+
+**Issue tracker** (e.g. Jira) — for reading tickets and filing defects. Add it with `claude mcp add --transport http <name> <endpoint>`, or through **Settings → Connectors** in the desktop app, then authenticate with `/mcp` inside a session.
+
+**Backend / system of record** — for verifying what the UI shows against the real data. Get the endpoint from your project lead; if it's internal, add it locally and don't commit it.
+
+```bash
+claude mcp list
+```
+
+✅ **Check:** each server shows `✔ Connected` (or `! Needs authentication` → run `/mcp`, select it, **Authenticate**). The first Playwright add downloads ~150 MB, so give it a minute. Servers added through the desktop Connectors UI don't appear in `claude mcp list` — check those under **Settings → Connectors**.
+
+### Step 6 — Fill in your project in `CLAUDE.md`
+
+Open `CLAUDE.md` and replace every `<PLACEHOLDER>` in **Key project context**: application and environments, test environment of record, tracker key, work streams in scope, user roles, integrations, and any open decisions.
+
+Keep it short. `CLAUDE.md` loads into **every** conversation — anything only sometimes relevant belongs in `knowledge-base/` instead.
+
+✅ **Check:** ask *"What project are we testing and which roles are in scope?"* — the answer should come straight from what you just wrote.
+
+### Step 7 — Load the knowledge base, and write the indexes
+
+This is the step that decides whether the workspace is useful or generic.
+
+1. Put each document in its folder under `knowledge-base/` — solution documents, TDD, BRD/requirements, SOW, call transcripts, permission matrices.
+2. **Fill in that folder's `INDEX.md`**: one row per document saying what it covers, plus any known gaps.
+3. For calls, add one entry per call to `knowledge-base/call-recordings/INDEX.md` with **date, topics, decisions, open items and participants**.
+
+> Adding documents **without** writing the index makes things worse — more for the agent to wade through, and no map. The agent reads the index first and opens a document only when the index points at it. That is what keeps sessions fast and cheap.
+
+✅ **Check:** ask a question you know the answer to, e.g. *"What did we decide about <topic> and when?"* The answer should **cite the document or call date**. No citation, or an answer from general knowledge, means an index is missing an entry.
+
+### Step 8 — Match the formats to your team (optional but worth it)
+
+The skills ship with sensible defaults. Adapt these three to match what your team already uses:
+
+| File | Change it to match |
+|---|---|
+| `.claude/skills/qa-test-writing/references/test-case-format.md` | Your test-case sheet's columns |
+| `.claude/skills/qa-bug-reporting/references/priority-and-labels.md` | Your tracker's priorities and labels |
+| `knowledge-base/reference-data/permissions-matrix.example.csv` | Your real roles × features matrix (same columns) |
+
+✅ **Check:** run the permission lookup against your matrix:
+
+```bash
+python .claude/skills/qa-permission-testing/scripts/lookup_permission.py --list-roles
+```
+
+### Step 9 — Validate before you commit anything
+
+```bash
+python scripts/validate_skills.py
+```
+
+✅ **Check:** `0 error(s)`. It checks every skill against the limits Claude Code enforces — most importantly a description of at most **1,024 characters**, because that is the text Claude matches your request against.
+
+### Step 10 — Run your first end-to-end flow
+
+Ask in plain language — the right skill loads on its own. A good first run, on one feature you were going to test anyway:
+
+| # | You say | What happens |
+|---|---|---|
+| 1 | *"How is <feature> supposed to work?"* | **qa-context-lookup** answers from the knowledge base and cites its source |
+| 2 | *"Write test cases for <feature>"* | **qa-test-writing** drafts them in your format, in chat, marking anything inferred |
+| 3 | *"Execute TC_XXX_001 on staging"* | **qa-test-execution** drives the browser, checks the backend, returns pass/fail with real values |
+| 4 | *"Can <role> see <data>?"* | **qa-permission-testing** checks matrix → live config → actual behaviour |
+| 5 | *"Draft a bug for this"* | **qa-bug-reporting** writes it in your format and **waits** |
+| 6 | *"Create it"* | Only now is the defect filed in your tracker |
+
+✅ **Check:** nothing reached your tracker until step 6. That is by design — **drafts always come before writes**.
+
+### Where your work gets saved
+
+You don't have to file anything by hand — the skills write into three folders, all tracked in git so the team shares one record. Each folder's `README.md` has the full convention.
+
+| Folder | What lands there | Named |
+|---|---|---|
+| `test-cases/` | Test cases, once you approve the draft | `2026-09-12_PDP_inventory-block.md` |
+| `reports/` | One execution or permission-test report per run | `2026-09-12_TC_PDP_002_sandbox.md` |
+| `bug-evidence/` | One folder per defect: screenshots, logs, the draft | `DRAFT_2026-09-12_price-not-refreshed/` → renamed to the ticket id once filed |
+
+Two rules worth knowing: a re-run never overwrites an earlier report, because a fail-then-pass history is itself evidence; and nothing here is deleted when a document changes upstream.
+
+✅ **Check:** after your first run, `git status` shows new files in `reports/` (and `bug-evidence/` if something failed). Commit them like any other change.
+
+### Every day after that
+
+- **Start a session** in the folder → read the SessionStart message for anything unconfigured.
+- **Ask before you dig** — questions go through the index, not through 200-page documents.
+- **Review every draft** before saying "create it". The agent reports gaps rather than guessing, but you are still the reviewer.
+- **After each client call**, add its entry to `call-recordings/INDEX.md` the same day — an index that lags reality gets trusted anyway.
+
+### If something doesn't work
+
+| Symptom | Fix |
+|---|---|
+| Skills don't appear in `/skills` | You opened the wrong folder — open `QA_Agentic_Workspace` itself, not its parent |
+| No "QA workspace session" message | `.claude/settings.json` missing (Step 4), or the session wasn't restarted |
+| Hook fails with `$'\r': command not found` | The `.sh` files got Windows line endings. Re-clone — `.gitattributes` keeps them LF — or run `git add --renormalize .` |
+| Playwright shows as failed | Still downloading — wait a minute and re-run `claude mcp list` |
+| Answers don't cite a source | The relevant `INDEX.md` has no entry for that topic (Step 7) |
+| The agent asks for a URL or login every run | It's still `<PLACEHOLDER>` in `.claude/qa-test-env.md` (Step 3) |
+| A skill never triggers | Run `python scripts/validate_skills.py`, and check you don't have a personal skill with the same name — personal skills override project ones |
+
+The sections below are the reference detail behind these steps.
+
+---
+
 ## What you get
 
 | | |
@@ -16,6 +211,7 @@ Nothing here is tied to a particular product, tracker, or industry. It is a **st
 | **Knowledge base** | Indexed folders for solution docs, technical design, requirements, contracts, call recordings, reference data |
 | **2 working hooks** | Blocks committing credentials; primes each session with environment state |
 | **1 custom subagent** | Correctly wired for delegated research (subagents don't inherit skills — this shows how) |
+| **Work folders** | `test-cases/`, `reports/`, `bug-evidence/` — date-stamped records the skills write to as you work |
 | **Validator** | `scripts/validate_skills.py` checks every skill against the spec limits |
 
 ### Built to stay cheap
@@ -45,10 +241,10 @@ Everything the agent could load competes with your conversation for the same con
 **Get the workspace**
 
 ```bash
-git clone <your-fork-of-this> qa-workspace
+git clone https://github.com/muhammadaqib-1992/QA_Agentic_Workspace.git
 ```
 ```bash
-cd qa-workspace
+cd QA_Agentic_Workspace
 ```
 
 Open the folder in Claude Code. `CLAUDE.md` and the skills in `.claude/skills/` are picked up automatically — there is nothing to "activate".
@@ -136,11 +332,12 @@ Two behaviours are deliberate and worth knowing:
 ## 5. Repo structure
 
 ```
-qa-workspace/
+QA_Agentic_Workspace/
 ├── CLAUDE.md                    # Always-on project standards (fill in the placeholders)
 ├── ARCHITECTURE.md              # Why the workspace is shaped this way — read once
 ├── README.md                    # This file
 ├── .gitignore                   # Keeps credentials and run artefacts out of git
+├── .gitattributes               # Keeps the hook scripts on LF line endings (Windows-safe)
 ├── .mcp.json.example            # Shareable MCP config
 ├── .claude/
 │   ├── qa-test-env.example.md   # Env TEMPLATE (committed, no real secrets)
@@ -164,7 +361,9 @@ qa-workspace/
 │   ├── contracts/               #   SOW, contractual scope
 │   ├── call-recordings/         #   transcripts + the mandatory INDEX.md
 │   └── reference-data/          #   permission matrices, config exports, test data
-├── reports/                     # Execution reports land here (git-ignored by default)
+├── test-cases/                  # Approved test cases — one date-stamped file per batch
+├── reports/                     # Execution & permission-test reports — date-stamped, one per run
+├── bug-evidence/                # One folder per defect: screenshots, recordings, logs, draft
 └── scripts/
     └── validate_skills.py       # Checks every skill against the spec limits
 ```

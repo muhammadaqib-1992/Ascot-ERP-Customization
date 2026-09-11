@@ -1,6 +1,6 @@
 ---
 name: qa-test-execution
-description: "Executes QA test cases end-to-end against the running application. Sources the test case (pasted in chat, written moments earlier by qa-test-writing, or from a tracker ticket), drives the browser via the browser-automation MCP, cross-checks backend data via the data MCP when a step requires it, and produces a formatted pass/fail execution report. Use whenever the user says 'execute TC_', 'run this test case', 'test this on staging', 'go through <ticket id>', 'verify this works', or asks for validation of application behaviour against a written test case. Do NOT use for ad-hoc browsing with no defined test case, for writing new test cases (qa-test-writing), or for role/permission coverage (qa-permission-testing). Never files a defect automatically — on a failure it offers to hand off to qa-bug-reporting and waits for explicit confirmation."
+description: "Executes QA test cases end-to-end against the running application. Sources the test case (pasted in chat, from qa-test-writing, or a tracker ticket), drives the browser via the browser-automation MCP, cross-checks backend data via the data MCP when a step requires it, and produces a pass/fail execution report, saved date-stamped to reports/ (failure evidence to bug-evidence/). Use whenever the user says 'execute TC_', 'run this test case', 'test this on staging', 'go through <ticket id>', 'verify this works', or asks for validation of application behaviour against a written test case. Do NOT use for ad-hoc browsing with no defined test case, for writing new test cases (qa-test-writing), or for role/permission coverage (qa-permission-testing). Never files a defect automatically — on a failure it offers to hand off to qa-bug-reporting and waits for explicit confirmation."
 ---
 
 # QA Test Execution
@@ -49,8 +49,27 @@ A failure on one step doesn't automatically end the run: if later steps are inde
 
 Capture evidence at the moment of failure — screenshot, console error, exact field values. Reconstructing it afterwards is unreliable and the detail that mattered is usually gone.
 
+Save it straight into a draft evidence folder, so it's ready if a defect is raised:
+
+```
+bug-evidence/DRAFT_YYYY-MM-DD_<TC-id>/
+├── 01_<what-it-shows>.png
+├── console.txt        # console errors, if any
+└── backend.txt        # the backend values you compared against
+```
+
+With the browser MCP, pass that path as the screenshot filename rather than saving elsewhere and moving it. Follow `bug-evidence/README.md` — above all, no credentials, no session-token URLs, no HAR files. Passed steps need no image files; the report's Actual column is enough.
+
 ## Step 6 — Report and hand off
 
-Write the report per `references/report-format.md` and post it in chat. Ask before saving it anywhere else.
+Write the report per `references/report-format.md`, post it in chat, and save it to:
+
+```
+reports/YYYY-MM-DD_<TC-id>_<env>.md
+```
+
+using the date of the run — e.g. `reports/2026-09-12_TC_PDP_002_sandbox.md`. One file per test case per run: a re-run gets a new dated file, never an overwrite, because a history of fails-then-passes is itself evidence. Reference any failure evidence by its `bug-evidence/` path in the Evidence section, and say where the report was saved.
+
+Saving to `reports/` is part of the run. Posting the report anywhere else — the tracker, a shared sheet — still needs the user's go-ahead.
 
 If the result is **Failed**, mention that you can draft a defect via `qa-bug-reporting` — then wait. Never chain straight into filing.

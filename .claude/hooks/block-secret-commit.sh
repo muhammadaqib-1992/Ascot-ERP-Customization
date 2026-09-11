@@ -19,6 +19,7 @@ PROTECTED_PATTERNS=(
   ".env"
   "credentials.json"
   "secrets.yml"
+  ".har"            # network captures carry session cookies and auth headers
 )
 
 payload="$(cat)"

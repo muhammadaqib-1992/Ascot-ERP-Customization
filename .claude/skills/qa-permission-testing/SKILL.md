@@ -73,4 +73,6 @@ Use the report shape in `qa-test-execution/references/report-format.md`, plus th
 **Test account:** <identifier, never the password>
 ```
 
-Always post the report in chat. If the live configuration disagreed with the matrix, **call that out even on a pass** — it means the documented matrix is stale and someone should update it. On a failure, offer `qa-bug-reporting` and wait.
+Always post the report in chat, and save it to `reports/YYYY-MM-DD_PERM_<role>-<feature>_<env>.md` using the date of the run — e.g. `reports/2026-09-12_PERM_L2-invoices_sandbox.md`. A re-test gets a new dated file, never an overwrite. Save failure screenshots to `bug-evidence/DRAFT_YYYY-MM-DD_PERM_<role>-<feature>/` and reference them by path (see `bug-evidence/README.md` — no credentials, session URLs or HAR files).
+
+If the live configuration disagreed with the matrix, **call that out even on a pass** — it means the documented matrix is stale and someone should update it. On a failure, offer `qa-bug-reporting` and wait.
