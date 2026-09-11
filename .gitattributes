@@ -5,3 +5,7 @@
 # then fails with "$'\r': command not found" - the credentials-commit guard
 # silently stops protecting you. Pinning eol=lf prevents that.
 *.sh text eol=lf
+
+# Same for the git hooks in .githooks/. `pre-commit` has no extension, so the rule
+# above would miss it — and a CRLF pre-commit hook fails the same silent way.
+.githooks/* text eol=lf

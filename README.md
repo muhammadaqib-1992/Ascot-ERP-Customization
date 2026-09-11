@@ -49,7 +49,7 @@ cd QA_Agentic_Workspace
 
 `CLAUDE.md` and the skills load automatically — there is nothing to activate.
 
-✅ **Check:** type `/skills` (CLI) or open the skills menu (desktop). You should see the five `qa-*` skills: `qa-context-lookup`, `qa-test-writing`, `qa-test-execution`, `qa-permission-testing`, `qa-bug-reporting`.
+✅ **Check:** type `/skills` (CLI) or open the skills menu (desktop). You should see the six `qa-*` skills: `qa-context-lookup`, `qa-test-writing`, `qa-test-execution`, `qa-permission-testing`, `qa-bug-reporting`, `qa-kb-sync`.
 
 ### Step 3 — Create your personal environment file
 
@@ -79,8 +79,15 @@ PowerShell:
 Copy-Item .claude/settings.json.example .claude/settings.json
 ```
 
-This activates two hooks:
-- **`PreToolUse`** — refuses any `git` command that would commit your credentials file or a `.env`.
+Then switch on the git-level guard. Run this once per clone — git never enables a repo's hooks automatically:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+That gives you three guards:
+- **`PreToolUse`** (Claude) — refuses any `git` command that would commit your credentials file, a `.env`, a `.har` capture, or a project document.
+- **`.githooks/pre-commit`** (git) — rejects any commit containing a project document from `knowledge-base/`, including one you make yourself in a terminal.
 - **`SessionStart`** — at the start of every session (and after compaction) it reports what is configured and what is missing.
 
 Close and reopen your Claude Code session so the hooks load.
@@ -119,13 +126,29 @@ Keep it short. `CLAUDE.md` loads into **every** conversation — anything only s
 
 This is the step that decides whether the workspace is useful or generic.
 
-1. Put each document in its folder under `knowledge-base/` — solution documents, TDD, BRD/requirements, SOW, call transcripts, permission matrices.
+1. Get the documents into each folder under `knowledge-base/` — solution documents, TDD, BRD/requirements, SOW, call transcripts, permission matrices. The easy way is the automatic Google Drive sync (Step 7b); you can also drop files in by hand. **Either way they stay on your machine** — git never commits them.
 2. **Fill in that folder's `INDEX.md`**: one row per document saying what it covers, plus any known gaps.
 3. For calls, add one entry per call to `knowledge-base/call-recordings/INDEX.md` with **date, topics, decisions, open items and participants**.
 
 > Adding documents **without** writing the index makes things worse — more for the agent to wade through, and no map. The agent reads the index first and opens a document only when the index points at it. That is what keeps sessions fast and cheap.
 
 ✅ **Check:** ask a question you know the answer to, e.g. *"What did we decide about <topic> and when?"* The answer should **cite the document or call date**. No citation, or an answer from general knowledge, means an index is missing an entry.
+
+### Step 7b — Keep the knowledge base in sync with Google Drive (every Monday)
+
+Rather than copying documents in by hand, link each knowledge-base folder to its Google Drive folder. Every Monday morning a scheduled task on **your** machine pulls anything new or changed and updates that folder's `INDEX.md`.
+
+1. **Connect Google Drive** to Claude — desktop app: **Settings → Connectors → Google Drive**.
+2. **Paste the Drive folder links** into `knowledge-base/sync-config.json`, one per folder. Leave a folder as `<PASTE…>` to skip it. The links are the same for the whole project team, so this file is committed once and teammates get them on clone.
+3. **In a Claude session in this folder, say:** *"Set up the knowledge-base sync"*. The `qa-kb-sync` skill checks the config and the guards, runs a first sync, then registers a **Monday 09:00** task on your machine.
+
+✅ **Check:** `knowledge-base/SYNC_LOG.md` shows the first run; new index rows are marked *auto-summary — needs review*; and `git status` shows **only** `INDEX.md` changes — never the documents themselves.
+
+Worth knowing:
+- The task runs while the Claude app is open. If it's closed on Monday morning, it runs at the next launch.
+- The sync never commits or pushes. Review the new index rows, then commit the `INDEX.md` changes yourself.
+- To sync outside the schedule, just say *"sync the knowledge base"*.
+- Video, audio and files above 25 MB are linked in the index rather than downloaded. Change `max_download_mb` in `sync-config.json` if that doesn't suit.
 
 ### Step 8 — Match the formats to your team (optional but worth it)
 
@@ -207,9 +230,10 @@ The sections below are the reference detail behind these steps.
 
 | | |
 |---|---|
-| **5 skills** | Research, test-case writing, test execution, permission testing, defect reporting |
+| **6 skills** | Research, test-case writing, test execution, permission testing, defect reporting, knowledge-base sync |
+| **Weekly Drive sync** | `qa-kb-sync` pulls new/changed Google Drive documents every Monday and updates the indexes — documents stay local, never in git |
 | **Knowledge base** | Indexed folders for solution docs, technical design, requirements, contracts, call recordings, reference data |
-| **2 working hooks** | Blocks committing credentials; primes each session with environment state |
+| **Guardrails** | Claude hook + git pre-commit hook: credentials, HAR captures and project documents can't be committed. SessionStart hook reports setup status |
 | **1 custom subagent** | Correctly wired for delegated research (subagents don't inherit skills — this shows how) |
 | **Work folders** | `test-cases/`, `reports/`, `bug-evidence/` — date-stamped records the skills write to as you work |
 | **Validator** | `scripts/validate_skills.py` checks every skill against the spec limits |
@@ -339,6 +363,9 @@ QA_Agentic_Workspace/
 ├── .gitignore                   # Keeps credentials and run artefacts out of git
 ├── .gitattributes               # Keeps the hook scripts on LF line endings (Windows-safe)
 ├── .mcp.json.example            # Shareable MCP config
+├── .githooks/
+│   ├── pre-commit               # Blocks documents & credentials from ANY commit
+│   └── kb-allowlist.sh          # The only knowledge-base paths allowed in git
 ├── .claude/
 │   ├── qa-test-env.example.md   # Env TEMPLATE (committed, no real secrets)
 │   ├── qa-test-env.md           # Your local copy (git-ignored — you create this)
@@ -353,8 +380,10 @@ QA_Agentic_Workspace/
 │       ├── qa-test-writing/         # + references/test-case-format.md
 │       ├── qa-test-execution/       # + references/report-format.md
 │       ├── qa-permission-testing/   # + references/ + scripts/lookup_permission.py
-│       └── qa-bug-reporting/        # + references/priority-and-labels.md
-├── knowledge-base/              # Your project documents — each folder has an INDEX.md
+│       ├── qa-bug-reporting/        # + references/priority-and-labels.md
+│       └── qa-kb-sync/              # + scripts/kb_sync.py — Monday Google Drive sync
+├── knowledge-base/              # INDEX.md files committed; documents local-only, NEVER committed
+│   ├── sync-config.json         #   Google Drive folder link per folder (committed)
 │   ├── solution-documents/      #   functional spec, acceptance criteria
 │   ├── technical-design/        #   TDD — config paths, identifiers, data flow
 │   ├── requirements/            #   BRD and upstream requirements

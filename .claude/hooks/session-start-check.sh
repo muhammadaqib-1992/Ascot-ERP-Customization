@@ -45,6 +45,28 @@ if [ -d "knowledge-base" ]; then
   fi
 fi
 
+# --- knowledge-base sync ------------------------------------------------------
+if [ -f "knowledge-base/sync-config.json" ]; then
+  configured="$(grep -c 'drive.google.com' knowledge-base/sync-config.json 2>/dev/null || echo 0)"
+  if [ "$configured" -eq 0 ]; then
+    echo "Drive sync: no folder links set yet in knowledge-base/sync-config.json."
+  else
+    last="$(grep -E '^\| [0-9]{4}-' knowledge-base/SYNC_LOG.md 2>/dev/null | tail -1 | cut -d'|' -f2 | tr -d ' ')"
+    if [ -n "${last:-}" ]; then
+      echo "Drive sync: $configured folder(s) linked, last run $last."
+    else
+      echo "Drive sync: $configured folder(s) linked, never run here — say \"sync the knowledge base\"."
+    fi
+  fi
+fi
+
+# --- git document guard -------------------------------------------------------
+if [ -d ".githooks" ] && [ "$(git config core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+  echo ""
+  echo "WARNING: git hooks are not active on this clone — project documents are not fully protected."
+  echo "  Run once:  git config core.hooksPath .githooks"
+fi
+
 # --- reminders that survive compaction ---------------------------------------
 echo ""
 echo "Standing rules: draft test cases and defects in chat before writing them anywhere;"

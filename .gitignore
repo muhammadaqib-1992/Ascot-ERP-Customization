@@ -17,6 +17,21 @@
 *.pem
 *.key
 
+# ---------------------------------------------------------------------------
+# Project documents NEVER go to GitHub. knowledge-base/ commits only its map:
+# READMEs, INDEX.md files and sync-config.json. The documents themselves are
+# downloaded locally from Google Drive by the qa-kb-sync skill.
+# Enforced three times: here, .githooks/pre-commit, and the Claude PreToolUse hook.
+# Sync manifests, listings and SYNC_LOG.md are per-machine state, covered by this too.
+# ---------------------------------------------------------------------------
+knowledge-base/**
+!knowledge-base/**/
+!knowledge-base/README.md
+!knowledge-base/sync-config.json
+!knowledge-base/**/INDEX.md
+!knowledge-base/**/.gitkeep
+!knowledge-base/reference-data/permissions-matrix.example.csv
+
 # Tooling run artefacts — regenerate rather than commit.
 # (test-cases/, reports/ and bug-evidence/ ARE tracked — they are the team's QA record.)
 screenshots/

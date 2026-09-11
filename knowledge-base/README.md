@@ -38,6 +38,30 @@ Keep this table current. It is the first thing the agent consults.
 
 Most application behaviour traces back to a decision recorded somewhere else. Before concluding a defect is UI-only, check whether an upstream document or a call decision explains it. Where two sources conflict — a call decision versus a written spec — **flag the conflict rather than silently choosing one**. Written documents are frequently not updated after a decision changes.
 
-## A note on large binaries
+## Documents never go to GitHub
 
-PDFs, spreadsheets and recordings are fine here, but remember they stay in git history forever once committed. If a document is large, sensitive, or changes often, consider linking to it from the relevant `INDEX.md` instead of committing the file itself.
+Only the **map** is committed: this README, each folder's `INDEX.md`, and `sync-config.json`. The documents themselves — solution documents, TDD, BRD, SOW, call recordings, client data — live **only on each person's machine**.
+
+Client documents pushed to GitHub stay in history permanently, even after deletion. So this is enforced three times rather than merely asked for:
+
+| Layer | What it stops |
+|---|---|
+| `.gitignore` | Documents never appear in a normal `git add` |
+| `.githooks/pre-commit` | Any commit containing a document — including after `git add -f`, and commits made in a terminal outside Claude. Switch it on once per clone: `git config core.hooksPath .githooks` |
+| Claude `PreToolUse` hook | Claude staging or committing a document, even on a clone where the git hook was never switched on |
+
+Every index row carries its document's Google Drive link, so a teammate who hasn't synced can still open the source.
+
+## Automatic sync from Google Drive
+
+Each folder here is linked to a Drive folder in `sync-config.json`. Every **Monday at 09:00**, a scheduled task on each teammate's machine runs the `qa-kb-sync` skill, which:
+
+1. Lists each linked Drive folder and compares it with what this machine already has.
+2. Downloads only **new or changed** files. Google Docs, Sheets and Slides are exported; video, audio and very large files get a link in the index instead of a download.
+3. Updates that folder's `INDEX.md` for the changed files only, marking each row `auto-summary — needs review`.
+4. Flags files removed from Drive — it never deletes a local copy.
+5. Appends a line to `SYNC_LOG.md`.
+
+The sync never commits anything. After a run, review the new index rows and commit the `INDEX.md` changes yourself.
+
+**Set it up:** paste the Drive folder links into `sync-config.json`, then say *"set up the knowledge-base sync"* in Claude. To run it outside the schedule, say *"sync the knowledge base"*.

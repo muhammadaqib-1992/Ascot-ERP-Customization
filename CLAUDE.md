@@ -23,6 +23,9 @@
 | `qa-test-execution` | Executing a test case against the application, with backend verification; pass/fail report. |
 | `qa-permission-testing` | Role/permission testing — documented matrix vs. live configuration vs. actual behaviour. |
 | `qa-bug-reporting` | Drafting a defect in the team format. Draft first; file in the tracker only on explicit confirmation. |
+| `qa-kb-sync` | Pulling new/changed Google Drive documents into `knowledge-base/` and updating the indexes. Scheduled every Monday per machine; also on demand. |
+
+**Project documents never go to git.** Everything in `knowledge-base/` except the READMEs, `INDEX.md` files and `sync-config.json` is local-only — git-ignored, refused by `.githooks/pre-commit`, and refused by the Claude hook. Never `git add -f` anything there.
 
 > **Subagents don't inherit these skills.** A skill loads into *your* conversation. A subagent sees them only if it is a custom agent in `.claude/agents/` that lists them in its frontmatter `skills:` field — and built-in agents can't use skills at all. Keep skill-driven work in the main thread.
 

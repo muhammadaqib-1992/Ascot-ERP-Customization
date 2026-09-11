@@ -72,4 +72,45 @@ MSG
     ;;
 esac
 
+# ---------------------------------------------------------------------------
+# Project documents never go to GitHub (see knowledge-base/README.md).
+# The git pre-commit hook enforces this too; this layer still protects Claude-made
+# commits on a clone where `git config core.hooksPath .githooks` was never run.
+# ---------------------------------------------------------------------------
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$repo_root" ] && [ -f "$repo_root/.githooks/kb-allowlist.sh" ]; then
+  # shellcheck source=/dev/null
+  . "$repo_root/.githooks/kb-allowlist.sh"
+
+  # 1. A forced add bypasses .gitignore — refuse it anywhere near knowledge-base/.
+  if printf '%s' "$command_text" | grep -q 'knowledge-base' \
+     && printf '%s' "$command_text" | grep -qE 'git (add|stage)([^|;&]*[[:space:]])?(-f|--force)([[:space:]]|$)'; then
+    echo "BLOCKED: forced 'git add' involving knowledge-base/ — project documents must never be committed." >&2
+    exit 2
+  fi
+
+  # 2. An explicit document path.
+  for p in $(printf '%s' "$command_text" | grep -oE "knowledge-base/[^[:space:]\"']+" || true); do
+    case "$p" in */) continue ;; esac
+    last="${p##*/}"
+    case "$last" in *.*) ;; *) continue ;; esac      # a directory — .gitignore filters it
+    if ! printf '%s' "$p" | grep -qE "$KB_ALLOWED_RE"; then
+      cat >&2 <<MSG
+BLOCKED: '$p' is a project document. Documents are synced locally from Google Drive and
+must never be committed — only the knowledge-base INDEX.md files are shared in git.
+MSG
+      exit 2
+    fi
+  done
+
+  # 3. On commit, run the same staged-file check git's pre-commit hook runs.
+  case "$command_text" in
+    *"git commit"*)
+      if [ -f "$repo_root/.githooks/pre-commit" ] && ! bash "$repo_root/.githooks/pre-commit"; then
+        exit 2
+      fi
+      ;;
+  esac
+fi
+
 exit 0
