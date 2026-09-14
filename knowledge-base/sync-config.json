@@ -17,11 +17,11 @@
   },
 
   "folders": {
-    "solution-documents": "<PASTE GOOGLE DRIVE FOLDER LINK>",
-    "technical-design":   "<PASTE GOOGLE DRIVE FOLDER LINK>",
-    "requirements":       "<PASTE GOOGLE DRIVE FOLDER LINK>",
+    "solution-documents": "https://drive.google.com/drive/folders/1PGgPDPeFZ457TryFSnkae5GzngtkJenQ",
+    "technical-design":   "https://drive.google.com/drive/folders/1wh4Blx7Ct8CCrSa8v9BRAVAp1mNZ-QIU",
+    "requirements":       "https://drive.google.com/drive/folders/1Ecsl4cWUQgWj6nLkbtkbMlgin3VHFSeS",
     "contracts":          "<PASTE GOOGLE DRIVE FOLDER LINK>",
-    "call-recordings":    "<PASTE GOOGLE DRIVE FOLDER LINK>",
-    "reference-data":     "<PASTE GOOGLE DRIVE FOLDER LINK>"
+    "call-recordings":    "https://drive.google.com/drive/folders/1Ih3cSsWC1F_oDjgLnPI1bePCotM4mefw",
+    "reference-data":     "https://drive.google.com/drive/folders/1FKPV6hcP4B0zG7oCQ76tRmVYHyMqztsP"
   }
 }
