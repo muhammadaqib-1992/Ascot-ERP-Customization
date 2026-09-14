@@ -6,8 +6,7 @@ Functional specification — how features are meant to behave, acceptance criter
 
 | Document | Covers | Notes |
 |---|---|---|
-
-*Empty. Add one row per document as you add it: what it covers, its version/status, and anything that supersedes it.*
+| `Aqib Copy of solution document - ACG (1).docx` | **Not downloaded — contents not yet indexed.** The ACG solution document. | [Open in Drive](https://drive.google.com/file/d/11xAHepnfiJVjnmdba5G7-ymin9MZujpc/view) · modified 2026-09-14 · **30 MB — above the Google Drive connector's 10 MB download limit**, so the sync links it rather than fetching it |
 
 ## Watch for
 
@@ -15,4 +14,7 @@ If your specification has both a numbered section list and a lettered appendix, 
 
 ## Known gaps
 
-Record what is **not** documented. A named gap stops the agent inventing an answer.
+- **The solution document is not available locally and its contents are unindexed.** The agent cannot answer acceptance-criteria questions from it — it will say so rather than guess. To fix, do one of:
+  - save a reduced copy to the Drive folder (compressing embedded images usually gets a document like this well under 10 MB), or
+  - split it into per-module documents, which also makes the index far more useful, or
+  - download it manually into this folder — the sync leaves local files it didn't fetch alone.

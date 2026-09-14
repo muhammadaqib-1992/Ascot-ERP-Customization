@@ -7,8 +7,10 @@
     "The documents themselves are downloaded locally and are NEVER committed to git."
   ],
 
-  "max_download_mb": 25,
+  "max_download_mb": 10,
   "never_download_mime_prefixes": ["video/", "audio/"],
+  "_exclude_note": "Zoom writes each call twice: *.transcript.vtt has speaker names and precise timestamps; *.cc.vtt has neither and garbles names. Sync only the transcript.",
+  "exclude_name_patterns": ["*.cc.vtt"],
 
   "google_export": {
     "application/vnd.google-apps.document": "docx",

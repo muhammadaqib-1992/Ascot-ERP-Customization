@@ -72,10 +72,10 @@ If a server is unavailable, skills fall back to a UI lookup and say so in the re
 
 Fill these in — they are the facts the agent will otherwise ask for on every run.
 
-- **Application / environments:** `<APP NAME>` — `<ENV NAMES AND URLS>` (e.g. sandbox vs production; note that sandboxes get refreshed and configuration drifts between them)
-- **Test environment of record:** `<e.g. Sandbox 1>` — plus the account/instance identifier
+- **Application / environments:** NetSuite ERP, account **628731** — Sandbox 2 (SB2): `https://628731-sb2.app.netsuite.com/`. Sandboxes get refreshed and configuration drifts between them, so always state which one a result came from.
+- **Test environment of record:** **SB2** — account id `628731-sb2`
 - **Issue tracker / project key:** `<TRACKER, PROJECT KEY>`
-- **Work streams in scope:** `<e.g. platform customization (scripts, workflows, custom records) | integrations (CRM, EDI, logistics) | storefront>` — these fail differently and need different verification, see the skills' reference files
+- **Work streams in scope:** ERP **customization** — scripts, workflows, custom records and fields, Suitelets. Customization defects are asserted on the **record state** after an action, not on the screen: a success toast with a silently failed script is the classic false pass.
 - **User roles under test:** `<ROLE LIST>` — name every role separately; most access defects only appear under one
 - **Known integrations:** `<SYSTEM, DIRECTION, TRIGGER>` — for each, note what triggers it and where failures are logged
 - **Open dependencies:** `<ANY UNRESOLVED DECISIONS THAT AFFECT TEST DATA OR EXPECTED RESULTS>`
