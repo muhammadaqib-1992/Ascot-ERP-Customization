@@ -34,7 +34,7 @@ claude --version
 ### Step 1 — Clone the workspace
 
 ```bash
-git clone https://github.com/muhammadaqib-1992/QA_Agentic_Workspace.git
+git clone https://bitbucket.org/folio3/qa-agentic-workspace.git
 ```
 ```bash
 cd QA_Agentic_Workspace
@@ -260,7 +260,7 @@ Everything the agent could load competes with your conversation for the same con
 **Get the workspace**
 
 ```bash
-git clone https://github.com/muhammadaqib-1992/QA_Agentic_Workspace.git
+git clone https://bitbucket.org/folio3/qa-agentic-workspace.git
 ```
 ```bash
 cd QA_Agentic_Workspace
