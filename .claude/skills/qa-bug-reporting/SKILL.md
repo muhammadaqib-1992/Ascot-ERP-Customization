@@ -7,6 +7,8 @@ description: "Drafts and files defects for this QA project in the team's standar
 
 Turns a failure into a defect report a developer can act on without coming back to ask questions. Drafts in chat first, files only on explicit instruction.
 
+**Tracker for this project:** Jira, project key **NACG**. File defects there unless the user names a different project for a specific ticket.
+
 **Only load `references/priority-and-labels.md` when you are actually assigning a priority or labels** — it holds the full decision tables.
 
 ## The golden rule

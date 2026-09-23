@@ -1,10 +1,12 @@
-# QA Agentic Workspace
+# Ascot ERP Customization — QA Workspace
 
-A reusable Claude Code workspace for software QA. Clone it, point it at your project's documents, fill in a few placeholders, and your team shares one agent that researches, writes test cases, executes them, tests permissions, and drafts defects — all in your formats.
+This is the QA team's live Claude Code workspace for the **Ascot ERP Customization** NetSuite project (account 628731, environment SB1, Jira tracker **NACG**). It's not a blank template — `CLAUDE.md` and `knowledge-base/` are already filled in for this project, and the team shares one agent that researches against the real Solution Document, writes and executes test cases, tests permissions, and drafts/files defects, all in this project's actual formats.
 
-Nothing here is tied to a particular product, tracker, or industry. It is a **starting skeleton**, not a finished configuration.
+It started from Folio3's reusable [`qa-agentic-workspace`](https://bitbucket.org/folio3/qa-agentic-workspace) template (tracked here as the `template` git remote, for pulling future template improvements) — but this repo itself is project-specific, not the generic skeleton.
 
 **Read [`ARCHITECTURE.md`](ARCHITECTURE.md) once before extending it.** It explains why each piece lives where it does — mostly so you don't put knowledge in the wrong primitive and wonder why it never loads.
+
+**New to this project?** Almost everything in the Quick Start below is a **per-teammate** step — your own env file, your own MCP connections, your own local copy of the (git-ignored) knowledge-base documents via Drive sync. The project-level setup (Steps 6 and 7's `CLAUDE.md` placeholders and `knowledge-base/*/INDEX.md` files) is already done and committed; you're syncing to it, not creating it from scratch.
 
 ---
 
@@ -34,10 +36,10 @@ claude --version
 ### Step 1 — Clone the workspace
 
 ```bash
-git clone https://bitbucket.org/folio3/qa-agentic-workspace.git
+git clone https://github.com/muhammadaqib-1992/Ascot-ERP-Customization.git
 ```
 ```bash
-cd QA_Agentic_Workspace
+cd Ascot-ERP-Customization
 ```
 
 ✅ **Check:** the folder contains `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `.claude/` and `knowledge-base/`.
@@ -115,12 +117,14 @@ Keep it short. `CLAUDE.md` loads into **every** conversation — anything only s
 
 ✅ **Check:** ask *"What project are we testing and which roles are in scope?"* — the answer should come straight from what you just wrote.
 
-### Step 7 — Load the knowledge base, and write the indexes
+### Step 7 — Load the knowledge base onto your machine
 
-This is the step that decides whether the workspace is useful or generic.
+The `INDEX.md` files are already written and committed for this project — but the documents themselves are **git-ignored and never leave anyone's machine**, so you still need your own local copy.
 
-1. Get the documents into each folder under `knowledge-base/` — solution documents, TDD, BRD/requirements, SOW, call transcripts, permission matrices. The easy way is the automatic Google Drive sync (Step 7b); you can also drop files in by hand. **Either way they stay on your machine** — git never commits them.
-2. **Fill in that folder's `INDEX.md`**: one row per document saying what it covers, plus any known gaps.
+This is the step that decides whether the agent can actually answer from the real project documents, or only from what's already in `CLAUDE.md`.
+
+1. Get the documents into each folder under `knowledge-base/` — solution documents, TDD, BRD/requirements, SOW, call transcripts, permission matrices. The easy way is the automatic Google Drive sync (Step 7b); you can also drop files in by hand.
+2. Check that folder's `INDEX.md` still matches what's on Drive — if you add or update a document, add or update its row (one row per document, what it covers, plus any known gaps).
 3. For calls, add one entry per call to `knowledge-base/call-recordings/INDEX.md` with **date, topics, decisions, open items and participants**.
 
 > Adding documents **without** writing the index makes things worse — more for the agent to wade through, and no map. The agent reads the index first and opens a document only when the index points at it. That is what keeps sessions fast and cheap.
@@ -209,7 +213,7 @@ Two rules worth knowing: a re-run never overwrites an earlier report, because a 
 
 | Symptom | Fix |
 |---|---|
-| Skills don't appear in `/skills` | You opened the wrong folder — open `QA_Agentic_Workspace` itself, not its parent |
+| Skills don't appear in `/skills` | You opened the wrong folder — open `Ascot-ERP-Customization` itself, not its parent |
 | No "QA workspace session" message | `.claude/settings.json` missing (Step 4), or the session wasn't restarted |
 | Hook fails with `$'\r': command not found` | The `.sh` files got Windows line endings. Re-clone — `.gitattributes` keeps them LF — or run `git add --renormalize .` |
 | Playwright shows as failed | Still downloading — wait a minute and re-run `claude mcp list` |
@@ -225,7 +229,7 @@ The sections below are the reference detail behind these steps.
 
 | | |
 |---|---|
-| **6 skills** | Research, test-case writing, test execution, permission testing, defect reporting, knowledge-base sync |
+| **7 skills** | Research, test-case writing, test execution, permission testing, defect reporting, knowledge-base sync, plus `acg-uat-script-writer` for building UAT cases from the Solution Document |
 | **Weekly Drive sync** | `qa-kb-sync` pulls new/changed Google Drive documents every Monday and updates the indexes — documents stay local, never in git |
 | **Knowledge base** | Indexed folders for solution docs, technical design, requirements, contracts, call recordings, reference data |
 | **Guardrails** | Claude hook + git pre-commit hook: credentials, HAR captures and project documents can't be committed. SessionStart hook reports setup status |
@@ -260,10 +264,10 @@ Everything the agent could load competes with your conversation for the same con
 **Get the workspace**
 
 ```bash
-git clone https://bitbucket.org/folio3/qa-agentic-workspace.git
+git clone https://github.com/muhammadaqib-1992/Ascot-ERP-Customization.git
 ```
 ```bash
-cd QA_Agentic_Workspace
+cd Ascot-ERP-Customization
 ```
 
 Open the folder in Claude Code. `CLAUDE.md` and the skills in `.claude/skills/` are picked up automatically — there is nothing to "activate".
@@ -303,19 +307,19 @@ claude mcp list
 
 To share config with the team, copy `.mcp.json.example` to `.mcp.json`. Teammates approve it on first run and authenticate remote servers with their own logins.
 
-## 3. Fill in your project
+## 3. Project configuration — already done here
 
-This is the part that decides whether the workspace is useful or generic.
+For a brand-new clone of the template, this is the part that decides whether the workspace is useful or generic. **For this repo, it's already done and committed** — `CLAUDE.md`'s placeholders are filled in (NetSuite SB1, tracker NACG, work streams, roles) and every `knowledge-base/*/INDEX.md` exists. You're extending an already-configured project, not bootstrapping one.
 
-**Replace the placeholders in `CLAUDE.md`.** Application name, environments, tracker key, roles under test, integrations, open decisions. Keep it short — it loads into *every* conversation.
+If something drifts (a new environment, a new role in scope, a new integration), update `CLAUDE.md` directly — keep it short, it loads into *every* conversation.
 
-**Load `knowledge-base/`** — and write the indexes. Drop documents into the right folder, then fill in that folder's `INDEX.md`.
+**Loading the actual documents is still per-teammate.** `knowledge-base/` holds the indexes in git, but the documents themselves are git-ignored — each person gets their own local copy via the Drive sync (Step 7b above) or by hand.
 
 > Adding documents without writing the index makes things **worse**: more for the agent to wade through, and no map. The index is the whole mechanism.
 
 `knowledge-base/README.md` has the routing map and explains what belongs where.
 
-**Adapt the skills.** The five in `.claude/skills/` are working defaults. The parts most worth editing:
+**Adapt the skills.** The seven in `.claude/skills/` — six `qa-*` skills plus `acg-uat-script-writer` — are the working set for this project. The parts most worth revisiting as the project evolves:
 
 - `qa-test-writing/references/test-case-format.md` — match your tracker's columns
 - `qa-bug-reporting/references/priority-and-labels.md` — match your priority scheme
@@ -351,7 +355,7 @@ Two behaviours are deliberate and worth knowing:
 ## 5. Repo structure
 
 ```
-QA_Agentic_Workspace/
+Ascot-ERP-Customization/
 ├── CLAUDE.md                    # Always-on project standards (fill in the placeholders)
 ├── ARCHITECTURE.md              # Why the workspace is shaped this way — read once
 ├── README.md                    # This file
@@ -378,7 +382,8 @@ QA_Agentic_Workspace/
 │       ├── qa-test-execution/       # + references/report-format.md
 │       ├── qa-permission-testing/   # + references/ + scripts/lookup_permission.py
 │       ├── qa-bug-reporting/        # + references/priority-and-labels.md
-│       └── qa-kb-sync/              # + scripts/kb_sync.py — Monday Google Drive sync
+│       ├── qa-kb-sync/              # + scripts/kb_sync.py — Monday Google Drive sync
+│       └── acg-uat-script-writer/   # Builds UAT cases from the Solution Document, one at a time
 ├── knowledge-base/              # INDEX.md files committed; documents local-only, NEVER committed
 │   ├── sync-config.json         #   Google Drive folder link per folder (committed)
 │   ├── solution-documents/      #   functional spec, acceptance criteria
