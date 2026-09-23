@@ -34,10 +34,10 @@ claude --version
 ### Step 1 — Clone the workspace
 
 ```bash
-git clone https://bitbucket.org/folio3/qa-agentic-workspace.git
+git clone https://github.com/muhammadaqib-1992/Ascot-ERP-Customization.git
 ```
 ```bash
-cd QA_Agentic_Workspace
+cd Ascot-ERP-Customization
 ```
 
 ✅ **Check:** the folder contains `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `.claude/` and `knowledge-base/`.
@@ -209,7 +209,7 @@ Two rules worth knowing: a re-run never overwrites an earlier report, because a 
 
 | Symptom | Fix |
 |---|---|
-| Skills don't appear in `/skills` | You opened the wrong folder — open `QA_Agentic_Workspace` itself, not its parent |
+| Skills don't appear in `/skills` | You opened the wrong folder — open `Ascot-ERP-Customization` itself, not its parent |
 | No "QA workspace session" message | `.claude/settings.json` missing (Step 4), or the session wasn't restarted |
 | Hook fails with `$'\r': command not found` | The `.sh` files got Windows line endings. Re-clone — `.gitattributes` keeps them LF — or run `git add --renormalize .` |
 | Playwright shows as failed | Still downloading — wait a minute and re-run `claude mcp list` |
@@ -260,10 +260,10 @@ Everything the agent could load competes with your conversation for the same con
 **Get the workspace**
 
 ```bash
-git clone https://bitbucket.org/folio3/qa-agentic-workspace.git
+git clone https://github.com/muhammadaqib-1992/Ascot-ERP-Customization.git
 ```
 ```bash
-cd QA_Agentic_Workspace
+cd Ascot-ERP-Customization
 ```
 
 Open the folder in Claude Code. `CLAUDE.md` and the skills in `.claude/skills/` are picked up automatically — there is nothing to "activate".
@@ -351,7 +351,7 @@ Two behaviours are deliberate and worth knowing:
 ## 5. Repo structure
 
 ```
-QA_Agentic_Workspace/
+Ascot-ERP-Customization/
 ├── CLAUDE.md                    # Always-on project standards (fill in the placeholders)
 ├── ARCHITECTURE.md              # Why the workspace is shaped this way — read once
 ├── README.md                    # This file

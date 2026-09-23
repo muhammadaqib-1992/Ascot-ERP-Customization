@@ -84,7 +84,7 @@ Fill these in — they are the facts the agent will otherwise ask for on every r
 
 - **Application / environments:** NetSuite ERP, account **628731** — Sandbox 2 (SB2): `https://628731-sb2.app.netsuite.com/`. Sandboxes get refreshed and configuration drifts between them, so always state which one a result came from.
 - **Test environment of record:** **SB2** — account id `628731-sb2`
-- **Issue tracker / project key:** `<TRACKER, PROJECT KEY>`
+- **Issue tracker / project key:** Jira — **NACG**
 - **Work streams in scope:** ERP **customization** — scripts, workflows, custom records and fields, Suitelets. Customization defects are asserted on the **record state** after an action, not on the screen: a success toast with a silently failed script is the classic false pass.
 - **User roles under test:** `<ROLE LIST>` — name every role separately; most access defects only appear under one
 - **Known integrations:** `<SYSTEM, DIRECTION, TRIGGER>` — for each, note what triggers it and where failures are logged
