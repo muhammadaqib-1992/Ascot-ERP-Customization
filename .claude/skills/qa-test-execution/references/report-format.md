@@ -12,10 +12,10 @@ Match your team's tracker columns so a report can be pasted straight in without 
 **Test Case ID:** TC_XXX_00X — <title>
 **Requirement:** <full requirement heading from the source document>
 **Module / Feature:** <...> / <...>
-**Source:** <pasted in chat | ticket id | written by qa-test-writing>
+**Source:** <test-cases/ file | pasted in chat | ticket id | written by qa-test-writing | steps given directly and written down this run>
 **Environment:** <env name and URL>
 **Role under test:** <role>
-**Executed:** <date> via <browser MCP> [+ <data MCP> where noted]
+**Executed:** <date> via Playwright MCP [+ backend/NetSuite MCP via qa-test-data-prep, or the stated fallback — see test-data.md]
 
 ### Steps
 
@@ -35,6 +35,9 @@ Match your team's tracker columns so a report can be pasted straight in without 
 
 ### Evidence
 <screenshots taken, one line each>
+
+### Test Data
+<see the sibling `test-data.md` in this run's folder for the full record>
 ```
 
 ## Writing the Actual column

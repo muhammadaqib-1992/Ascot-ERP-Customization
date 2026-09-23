@@ -1,6 +1,6 @@
 ---
 name: qa-test-execution
-description: "Executes QA test cases end-to-end against the running application. Sources the test case (pasted in chat, from qa-test-writing, or a tracker ticket), drives the browser via the browser-automation MCP, cross-checks backend data via the data MCP when a step requires it, and produces a pass/fail execution report, saved date-stamped to reports/ (failure evidence to bug-evidence/). Use whenever the user says 'execute TC_', 'run this test case', 'test this on staging', 'go through <ticket id>', 'verify this works', or asks for validation of application behaviour against a written test case. Do NOT use for ad-hoc browsing with no defined test case, for writing new test cases (qa-test-writing), or for role/permission coverage (qa-permission-testing). Never files a defect automatically — on a failure it offers to hand off to qa-bug-reporting and waits for explicit confirmation."
+description: "Executes QA test cases end-to-end. Sources the case from test-cases/, chat, qa-test-writing, a ticket, or raw steps the user gives directly (write them down first, then execute). Always drives the browser via Playwright MCP; runs qa-test-data-prep (backend/NetSuite MCP) alongside it for test data, falling back to asking the user or a Playwright UI lookup if that MCP isn't connected. Produces a pass/fail report plus a test-data record in a dated reports/ folder (failure evidence to bug-evidence/). Use for 'execute TC_', 'run this test case', 'test this on staging', 'go through <ticket id>', 'verify this works'. Not for ad-hoc browsing, writing cases (qa-test-writing), or permission coverage (qa-permission-testing). Never auto-files a defect — on failure it offers qa-bug-reporting and waits."
 ---
 
 # QA Test Execution
@@ -12,26 +12,40 @@ Runs a test case the way a QA engineer would: confirm what "pass" means, drive t
 ## Ground rules
 
 1. **Never store or write down credentials** — not in this file, not in scripts, not in the report, not in chat beyond the turn the user gives them. Read them from `.claude/qa-test-env.md`; if a value is a `<PLACEHOLDER>`, ask for that run only.
-2. **The UI is not the source of truth.** Most test cases compare what the application *shows* against what the backend actually *holds*. Check both. "It looked right" is not a pass for a data-accuracy case.
-3. **Never auto-file a defect.** A failure gets reported clearly, with an offer to hand off to `qa-bug-reporting`. Filing happens only if the user says so after reading the report.
-4. **Confirm your tooling is live before starting.** If the browser MCP isn't reachable, stop and say so rather than failing silently halfway through a run.
-5. **Report what happened, not what should have happened.** If you skipped a step, say so. If you substituted test data, say so. A report that hides its own gaps is worse than no report, because someone will act on it.
+2. **Always drive the browser through the Playwright MCP.** It's the browser-automation connector for this project (`claude mcp add playwright -- npx -y @playwright/mcp@latest` per `README.md`). Don't fall back to computer-use or another browser tool for a test execution run unless the user explicitly asks for a different one.
+3. **The UI is not the source of truth.** Most test cases compare what the application *shows* against what the backend actually *holds*. Check both. "It looked right" is not a pass for a data-accuracy case.
+4. **Never auto-file a defect.** A failure gets reported clearly, with an offer to hand off to `qa-bug-reporting`. Filing happens only if the user says so after reading the report.
+5. **Confirm your tooling is live before starting.** If the Playwright MCP isn't reachable, stop and say so rather than failing silently halfway through a run.
+6. **Report what happened, not what should have happened.** If you skipped a step, say so. If you substituted test data, say so. A report that hides its own gaps is worse than no report, because someone will act on it.
 
 ## Step 1 — Establish the test case
 
-Source it from chat, from `qa-test-writing`, or from a tracker ticket. Normalise into: id, pre-condition, numbered steps, expected result per step.
+The test case arrives one of two ways:
+
+- **A written test case** — from `test-cases/` (the user names a file or a TC id you look up there), pasted in chat, from `qa-test-writing`, or a tracker ticket. Normalise into: id, pre-condition, numbered steps, expected result per step.
+- **A raw instruction set** — the user describes what to test in plain language instead of pointing at a written case. **Write the steps down first**, in the same shape (id, pre-condition, numbered steps, expected result per step), post them in chat, and get a quick confirmation before executing. Treat this written-down version as the test case for the rest of the run — it's what the report and test-data record are checked against.
 
 If the expected result is vague ("works correctly"), resolve that **before** running anything — an unfalsifiable case wastes the whole run.
 
-## Step 2 — Satisfy the pre-condition
+## Step 2 — Gather test data and satisfy the pre-condition
 
-Before touching the browser, verify the pre-condition is actually true. If it references backend state (a record's status, a quantity, a configuration toggle, a role assignment), check it via the data MCP rather than assuming.
+Before touching the browser, verify the pre-condition is actually true, and gather whatever backend records the run needs (a user with a given role, an item in a given status, an unrelated account's data for an exclusion check).
 
-If the state is wrong, **ask before changing it.** Setting up test data by mutating records is a legitimate step, but silently altering the system of record invalidates whatever else is running against it.
+**Coordinate two connections for this:**
+- **Backend/NetSuite MCP**, via the `qa-test-data-prep` agent — dispatch it (in the background, so its query output doesn't crowd the main thread) to find and verify the records this run needs. It's read-only and never touches the browser, so it runs alongside Playwright without conflict.
+- **Playwright MCP**, in the main thread — once the data comes back, this is what actually drives the application.
+
+**If the backend/NetSuite MCP isn't connected** (the agent reports it unreachable), don't stall the run — do one of:
+1. **Ask the user directly** for the specific record/value the step needs, or
+2. **Extract it via Playwright** instead — a UI lookup (open the record, read the field) stands in for the backend query. Say plainly in the report that this came from a UI read, not a direct backend check, since that's weaker evidence for a data-accuracy assertion.
+
+If the pre-condition state is wrong, **ask before changing it.** Setting up test data by mutating records is a legitimate step, but silently altering the system of record invalidates whatever else is running against it.
+
+**Save what you gathered** — see Step 6b. The data a run used is part of its record, the same way the report is.
 
 ## Step 3 — Log in as the right role
 
-Confirm which environment and which role the case requires, then authenticate. Capture the landed state before proceeding — it is the first piece of evidence, and it catches "the run was against the wrong environment" before you waste twenty steps.
+Confirm which environment and which role the case requires, then authenticate through the Playwright MCP. Capture the landed state before proceeding — it is the first piece of evidence, and it catches "the run was against the wrong environment" before you waste twenty steps.
 
 ## Step 4 — Execute
 
@@ -58,17 +72,37 @@ bug-evidence/DRAFT_YYYY-MM-DD_<TC-id>/
 └── backend.txt        # the backend values you compared against
 ```
 
-With the browser MCP, pass that path as the screenshot filename rather than saving elsewhere and moving it. Follow `bug-evidence/README.md` — above all, no credentials, no session-token URLs, no HAR files. Passed steps need no image files; the report's Actual column is enough.
+With Playwright, pass that path as the screenshot filename rather than saving elsewhere and moving it. Follow `bug-evidence/README.md` — above all, no credentials, no session-token URLs, no HAR files. Passed steps need no image files; the report's Actual column is enough.
 
-## Step 6 — Report and hand off
+## Step 6 — Report, save test data, and hand off
 
-Write the report per `references/report-format.md`, post it in chat, and save it to:
+Each run gets one dated folder, not a loose file — this is where both the report and the test data it used live together:
 
 ```
-reports/YYYY-MM-DD_<TC-id>_<env>.md
+reports/YYYY-MM-DD_<TC-id>_<env>/
+├── report.md       # the execution report
+└── test-data.md    # the records this run used, and where each came from
 ```
 
-using the date of the run — e.g. `reports/2026-09-12_TC_PDP_002_sandbox.md`. One file per test case per run: a re-run gets a new dated file, never an overwrite, because a history of fails-then-passes is itself evidence. Reference any failure evidence by its `bug-evidence/` path in the Evidence section, and say where the report was saved.
+e.g. `reports/2026-09-12_TC_PDP_002_sandbox/`. One folder per test case per run: a re-run gets a new dated folder, never an overwrite, because a history of fails-then-passes is itself evidence.
+
+### 6a — `report.md`
+
+Write it per `references/report-format.md`, post it in chat, and save it into the run folder. Reference any failure evidence by its `bug-evidence/` path in the Evidence section, and say where the report was saved.
+
+### 6b — `test-data.md`
+
+Carry over the table `qa-test-data-prep` returned (or what you gathered via the Playwright/user-asked fallback from Step 2), so the next person re-running this case knows exactly what it ran against without re-deriving it:
+
+```markdown
+## Test Data — TC_XXX_00X, YYYY-MM-DD
+
+| Need | Record type | Internal ID | Identifier | Source | Notes |
+|---|---|---|---|---|---|
+| ... | ... | ... | ... | qa-test-data-prep / Playwright UI lookup / user-supplied | ... |
+```
+
+If nothing needed backend data for this run, save the file anyway with one line saying so — an empty run with no file looks like a skipped step, not a deliberate "none needed."
 
 Saving to `reports/` is part of the run. Posting the report anywhere else — the tracker, a shared sheet — still needs the user's go-ahead.
 
